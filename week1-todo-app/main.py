@@ -19,8 +19,8 @@ class TodoApp:
     - tasks_dict: ID到任務的映射 (用於快速查找)
     - next_id: 下一個待分配的ID
     """
-
-    def __init__(self,filename="task.json"):
+    
+    def __init__(self, filename="tasks.json"):
         """
         初始化應用程序
         
@@ -30,12 +30,13 @@ class TodoApp:
         時間複雜度: O(n) - 需要讀取所有n個任務
         空間複雜度: O(n) - 存儲所有n個任務
         """
-        self.filename = filename
+        # 讓檔案永遠放在程式所在的資料夾
+        self.filename = Path(__file__).parent / filename
         self.tasks_list = []    # List[Dict] - O(n)遍歷
         self.tasks_dict = {}    # Dict[int, Dict] - O(1)查找
         self.next_id = 1        # int - 生成唯一ID的計數器
         self.load_tasks()
-
+    
     def load_tasks(self):
         """
         從JSON文件加載任務到內存
@@ -49,8 +50,9 @@ class TodoApp:
         """
         try:
             if Path(self.filename).exists():
-                with open(self.filename,"r",encoding ="utf-8") as f:
+                with open(self.filename, "r", encoding="utf-8") as f:
                     self.tasks_list = json.load(f)
+                
                 # 重建字典以支持O(1)查找
                 # 這就是「用空間換時間」的體現
                 for task in self.tasks_list:
@@ -60,12 +62,12 @@ class TodoApp:
                 if self.tasks_list:
                     self.next_id = max(task["id"] for task in self.tasks_list) + 1
                 
-                print(f"已加載 {len(self.tasks_list)} 個任務")
+                print(f"✅ 已加載 {len(self.tasks_list)} 個任務")
         except (json.JSONDecodeError, IOError) as e:
-            print(f"加載任務失敗：{e}")
+            print(f"❌ 加載任務失敗：{e}")
             self.tasks_list = []
-            self.tasks_dict = {} 
-
+            self.tasks_dict = {}
+    
     def save_tasks(self):
         """
         將任務保存到JSON文件
@@ -79,9 +81,9 @@ class TodoApp:
         try:
             with open(self.filename, "w", encoding="utf-8") as f:
                 json.dump(self.tasks_list, f, ensure_ascii=False, indent=2)
-            print("任務已保存")
+            print("✅ 任務已保存")
         except IOError as e:
-            print(f"保存任務失敗：{e}")
+            print(f"❌ 保存任務失敗：{e}")
     
     def add_task(self, title, priority="中"):
         """
@@ -113,7 +115,7 @@ class TodoApp:
         self.next_id += 1
         
         self.save_tasks()
-        print(f"任務已添加：{title}")
+        print(f"✅ 任務已添加：{title}")
         return task
     
     def find_task_by_id(self, task_id):
@@ -181,6 +183,7 @@ class TodoApp:
                   f"建立:{task['created_at']}")
         
         print("="*60 + "\n")
+    
     def complete_task(self, task_id):
         """
         標記任務為完成
